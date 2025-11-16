@@ -1,0 +1,62 @@
+@RestResource(urlMapping='/jobApplications/*')
+global with sharing class JobApplicationREST {
+
+    // Payload class
+    global class JobApplicationPayload {
+        public String firstName;
+        public String lastName;
+        public String email;
+        public String phone;
+        public String resume; 
+    }
+
+    @HttpPost
+    global static void createJobApplication() {
+        RestRequest req = RestContext.request;
+        RestResponse res = RestContext.response;
+        try {
+            // parse JSON body into payload
+            String body = req.requestBody.toString();
+            JobApplicationPayload payload = (JobApplicationPayload) JSON.deserialize(body, JobApplicationPayload.class);
+
+            // basic server-side validation (mirror validation rules)
+            if (payload == null || String.isBlank(payload.firstName) || String.isBlank(payload.lastName) || String.isBlank(payload.email)) {
+                res.statusCode = 400;
+                res.responseBody = Blob.valueOf(JSON.serialize(
+                    new Map<String,Object>{'success'=>false,'message'=>'firstName, lastName and email are required.'}
+                ));
+                return;
+            }
+
+            // create record
+            Job_Application__c ja = new Job_Application__c(
+                FirstName__c = payload.firstName,
+                LastName__c  = payload.lastName,
+                Email__c      = payload.email,
+                Phone__c      = payload.phone,
+                Resume__c     = payload.resume);
+
+            insert ja;
+
+            // Respond with created id and generated application id
+            res.statusCode = 201;
+            res.responseBody = Blob.valueOf(JSON.serialize(
+                new Map<String,Object>{
+                    'success' => true,
+                    'id' => ja.Id,
+                    'applicationId' => ja.Id__c
+                }
+            ));
+        } catch (DmlException dmle) {
+            res.statusCode = 500;
+            res.responseBody = Blob.valueOf(JSON.serialize(
+                new Map<String,Object>{'success'=>false,'message'=>'DML error: '+ dmle.getMessage()}
+            ));
+        } catch (Exception e) {
+            res.statusCode = 500;
+            res.responseBody = Blob.valueOf(JSON.serialize(
+                new Map<String,Object>{'success'=>false,'message'=>e.getMessage()}
+            ));
+        }
+    }
+}
