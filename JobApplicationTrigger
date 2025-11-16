@@ -1,0 +1,16 @@
+trigger JobApplicationTrigger on Job_Application__c (before insert) {
+    // Use a timestamp + org prefix + simple counter to ensure uniqueness within the transaction
+    Long ts = Datetime.now().getTime();
+    String orgPrefix = UserInfo.getOrganizationId().substring(0,6);
+    Integer counter = 1;
+
+    for (Job_Application__c ja : Trigger.new) {
+        if (String.isBlank(ja.Id__c)) {
+            // Format: JA-<ORG6>-<TIMEMS>-<N>
+            ja.Id__c = 'JA-' + orgPrefix + '-' + String.valueOf(ts) + '-' + String.valueOf(counter);
+            counter++;
+        }
+    }
+}
+
+           
