@@ -1,0 +1,27 @@
+@IsTest
+private class JobApplicationREST_Test {
+    @IsTest static void testCreateJobApp() {
+        String jsonBody = '{'
+            + '"firstName":"Didi",'
+            + '"lastName":"Bitini",'
+            + '"email":"lumbet.bitini@merkle.com",'
+            + '"resume":"Developer",'
+            + '"phone":"0623350698"'
+            + '}';
+        RestRequest req = new RestRequest();
+        req.requestUri = '/services/apexrest/jobApplications/';
+        req.httpMethod = 'POST';
+        req.requestBody = Blob.valueOf(jsonBody);
+        RestContext.request = req;
+        RestContext.response = new RestResponse();
+
+        Test.startTest();
+        JobApplicationREST.createJobApplication();
+        Test.stopTest();
+
+        // validate a job application was created
+        Job_Application__c[] apps = [SELECT Id, Id__c, Email__c FROM Job_Application__c WHERE Email__c = 'lumbet.bitini@merkle.com' LIMIT 1];
+        System.assertEquals(1, apps.size());
+        System.assertNotEquals(null, apps[0].Id__c);
+    }
+}
