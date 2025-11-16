@@ -8,11 +8,11 @@ export default function App(){
   e.preventDefault();
   setMsg("Submitting application...");
   const result=await submitApplication(form);
-  if(result.success) setMsg("Application submitted! ID: "+result.applicationId);
+  if(result.success) setMsg("Application submitted, Good Luck !");
   else setMsg("Error: "+(result.message||JSON.stringify(result)));
  };
  return(<div style={{padding:20,maxWidth:500,margin:"auto"}}>
-  <h2>Job Application</h2>
+  <h1>Job Application</h1>
   <form onSubmit={handleSubmit}>
    <input name="firstName" placeholder="First Name" required onChange={handleChange}/><br/>
    <input name="lastName" placeholder="Last Name" required onChange={handleChange}/><br/>
