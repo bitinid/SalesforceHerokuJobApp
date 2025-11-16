@@ -1,1 +1,1 @@
-Sales Force Class and trigger
+SalesForce Class and trigger
