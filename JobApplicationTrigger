@@ -1,16 +1,31 @@
-trigger JobApplicationTrigger on Job_Application__c (before insert) {
-    // Use a timestamp + org prefix + simple counter to ensure uniqueness within the transaction
-    Long ts = Datetime.now().getTime();
-    String orgPrefix = UserInfo.getOrganizationId().substring(0,6);
-    Integer counter = 1;
+trigger JobApplicationTrigger on Job_Application__c (before insert, after insert) {
 
-    for (Job_Application__c ja : Trigger.new) {
-        if (String.isBlank(ja.Id__c)) {
-            // Format: JA-<ORG6>-<TIMEMS>-<N>
-            ja.Id__c = 'JA-' + orgPrefix + '-' + String.valueOf(ts) + '-' + String.valueOf(counter);
-            counter++;
+    // BEFORE INSERT — generate unique ID
+    if (Trigger.isBefore && Trigger.isInsert) {
+        Long ts = Datetime.now().getTime();
+        String orgPrefix = UserInfo.getOrganizationId().substring(0, 6);
+        Integer counter = 1;
+
+        for (Job_Application__c ja : Trigger.new) {
+            if (String.isBlank(ja.Id__c)) {
+                ja.Id__c = 'JA-' + orgPrefix + '-' + ts + '-' + counter;
+                counter++;
+            }
+        }
+    }
+
+    // AFTER INSERT — email sending
+    if (Trigger.isAfter && Trigger.isInsert) {
+        List<Id> idsToEmail = new List<Id>();
+
+        for (Job_Application__c ja : Trigger.new) {
+            if (String.isNotBlank(ja.Email__c)) {
+                idsToEmail.add(ja.Id); // now the Id exists
+            }
+        }
+
+        if (!idsToEmail.isEmpty()) {
+            System.enqueueJob(new JobApplicationEmailQueueable(idsToEmail));
         }
     }
 }
-
-           
