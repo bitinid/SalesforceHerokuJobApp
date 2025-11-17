@@ -1,0 +1,45 @@
+public class JobApplicationEmailQueueable implements Queueable, Database.AllowsCallouts {
+
+    private List<Id> jobAppIds;
+
+    public JobApplicationEmailQueueable(List<Id> ids) {
+        this.jobAppIds = ids;
+    }
+
+    public void execute(QueueableContext ctx) {
+
+        System.debug('Queueable running with IDs: ' + jobAppIds);
+
+        List<Job_Application__c> applications = [
+            SELECT Id, Email__c, FirstName__c, Id__c
+            FROM Job_Application__c
+            WHERE Id IN :jobAppIds
+        ];
+
+        System.debug('Applications found: ' + applications);
+
+        List<Messaging.SingleEmailMessage> emails = new List<Messaging.SingleEmailMessage>();
+
+        for (Job_Application__c ja : applications) {
+            if (String.isBlank(ja.Email__c)) continue;
+
+            Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+            mail.setToAddresses(new String[]{ ja.Email__c });
+            mail.setSubject('Your application has been received (' + ja.Id__c + ')');
+            mail.setPlainTextBody(
+                'Hi ' + ja.FirstName__c + ',\n\n' +
+                'Thank you for your application.\n' +
+                'Your application ID is ' + ja.Id__c + '.\n\n' +
+                'Regards,\nRecruiting Team'
+            );
+            emails.add(mail);
+        }
+
+        if (!emails.isEmpty()) {
+            Messaging.sendEmail(emails);
+        }
+        
+        System.debug('Queueable EXECUTE RUNNING');
+
+    }
+}
