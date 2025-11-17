@@ -27,5 +27,8 @@ trigger JobApplicationTrigger on Job_Application__c (before insert, after insert
         if (!idsToEmail.isEmpty()) {
             System.enqueueJob(new JobApplicationEmailQueueable(idsToEmail));
         }
+        
+        System.debug('ENQUEUE REQUEST from Trigger with IDs: ' + idsToEmail);
+
     }
 }
