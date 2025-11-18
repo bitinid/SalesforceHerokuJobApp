@@ -1,0 +1,29 @@
+@isTest
+public class JobApplicationControllerTest {
+
+    @testSetup
+    static void setup() {
+        List<Job_Application__c> apps = new List<Job_Application__c>();
+        apps.add(new Job_Application__c(FirstName__c = 'Didi', LastName__c = 'Btini', Email__c = 'bitinid@yahoo.fr'));
+        apps.add(new Job_Application__c(FirstName__c = 'Tadi', LastName__c = 'Btini', Email__c = 'tadibitini@gmail.com'));
+        insert apps;
+    }
+
+    @isTest
+    static void testSearchByName() {
+        Test.startTest();
+        List<Job_Application__c> result = JobApplicationController.getJobApplications('Didi');
+        Test.stopTest();
+
+        System.assert(result.size() >= 1, 'Should return at least 1 job application');
+    }
+
+    @isTest
+    static void testSearchEmptyKey() {
+        Test.startTest();
+        List<Job_Application__c> result = JobApplicationController.getJobApplications('');
+        Test.stopTest();
+
+        System.assert(result.size() > 0, 'Should return records when no filter is applied');
+    }
+}
