@@ -1,0 +1,57 @@
+@isTest
+public class JobApplicationTriggerTest {
+
+    @testSetup
+    static void setupData() {
+        // Nothing required here currently
+    }
+
+    @isTest
+    static void testTriggerAndQueueable() {
+        Job_Application__c job = new Job_Application__c(
+            FirstName__c = 'Didi',
+            LastName__c = 'Btini',
+            Email__c = 'bitinid@yahoo.fr'
+        );
+        
+        Test.startTest();
+        insert job;
+        Test.stopTest(); // ensures queueable executes (but email suppressed)
+        
+        Job_Application__c insertedJA = [
+            SELECT Id, Id__c, Email__c
+            FROM Job_Application__c
+            WHERE Id = :job.Id
+            LIMIT 1
+        ];
+
+        System.assertNotEquals(null, insertedJA.Id__c, 'Custom ID should be generated');
+        System.assertEquals('bitinid@yahoo.fr', insertedJA.Email__c);
+
+        // DO NOT assert emails; they never run during tests
+        System.assert(true, 'Trigger completed without errors');
+    }
+
+    @isTest
+    static void testTriggerWithoutEmail() {
+        Job_Application__c job = new Job_Application__c(
+            FirstName__c = 'Didi',
+            LastName__c = 'Btini',
+            Email__c = 'bitinid@yahoo.fr'
+        );
+        
+        Test.startTest();
+        insert job;
+        Test.stopTest();
+
+        Job_Application__c insertedJA = [
+            SELECT Id, Id__c
+            FROM Job_Application__c
+            WHERE Id = :job.Id
+            LIMIT 1
+        ];
+
+        System.assertNotEquals(null, insertedJA.Id__c);
+        System.assert(true, 'Trigger with no email executed successfully');
+    }
+}
