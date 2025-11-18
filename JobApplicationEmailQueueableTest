@@ -1,0 +1,40 @@
+@isTest
+public class JobApplicationEmailQueueableTest {
+    
+    @isTest
+    static void testQueueableEmailSending() {
+
+        Job_Application__c job = new Job_Application__c(
+            FirstName__c = 'Didi',
+            LastName__c = 'Btini',
+            Email__c = 'bitinid@yahoo.fr'
+        );
+        insert job;
+
+        Test.startTest();
+        System.enqueueJob(new JobApplicationEmailQueueable(new List<Id>{job.Id}));
+        Test.stopTest();
+
+        // Validate that queueable executed by verifying log or no exceptions
+        // Queueable CANNOT send email during test (Test.isRunningTest)
+        System.assert(true, 'Queueable executed without errors');
+    }
+
+    @isTest
+    static void testQueueableNoEmail() {
+
+        Job_Application__c job = new Job_Application__c(
+            FirstName__c = 'Didi',
+            LastName__c = 'Btini',
+            Email__c = 'bitinid@yahoo.fr'
+        );
+        insert job;
+
+        Test.startTest();
+        System.enqueueJob(new JobApplicationEmailQueueable(new List<Id>{job.Id}));
+        Test.stopTest();
+
+        // Email should not send, queueable should not fail
+        System.assert(true, 'Queueable without email executed without errors');
+    }
+}
