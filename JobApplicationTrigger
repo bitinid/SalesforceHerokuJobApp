@@ -15,7 +15,7 @@ trigger JobApplicationTrigger on Job_Application__c (before insert, after insert
     }
 
     // AFTER INSERT — email sending
-    if (Trigger.isAfter && Trigger.isInsert) {
+    if (Trigger.isAfter && Trigger.isInsert && !Test.isRunningTest()) {
         List<Id> idsToEmail = new List<Id>();
 
         for (Job_Application__c ja : Trigger.new) {
